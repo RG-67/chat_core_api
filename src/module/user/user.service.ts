@@ -15,7 +15,7 @@ export class UserService {
                 return { status: true, message: "User registered successfully", data: result.rows[0] };
             }
             return { status: false, message: "User registration failed" };
-        } catch (error: any) {
+        } catch (error: any) {            
             return { status: false, message: error.message };
         }
     }

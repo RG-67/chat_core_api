@@ -6,12 +6,12 @@ import { userRegisterSchema } from "./user.schema";
 
 
 
-export function UserRouter(app: any) {
+export function userRoute(app: any) {
 
     const repo = new UserRepository(app.db);
     const service = new UserService(repo);
     const controller = new UserController(service);
 
-    app.post('user_register/', { schema: userRegisterSchema }, controller.userRegister);
+    app.post('/user_register', { schema: userRegisterSchema }, controller.userRegister);
 
 }

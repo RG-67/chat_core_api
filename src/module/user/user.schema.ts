@@ -42,11 +42,19 @@ const userRegisterSchema = {
         },
 
         400: {
-            userRegFailedRes
+            type: "object",
+            properties: {
+                status: { type: "boolean" },
+                message: { type: "string" }
+            }
         },
 
         500: {
-            userRegFailedRes
+            type: "object",
+            properties: {
+                status: { type: "boolean" },
+                message: { type: "string" }
+            }
         }
 
     }
