@@ -6,3 +6,9 @@ export interface userRegisterType {
     email: string,
     password: string
 }
+
+
+export interface userLoginType {
+    email: string,
+    password: string
+}

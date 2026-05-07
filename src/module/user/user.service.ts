@@ -1,5 +1,6 @@
+import { compareHass } from "../../utils/constants";
 import { UserRepository } from "./user.repository";
-import { userRegisterType } from "./user.type";
+import { userLoginType, userRegisterType } from "./user.type";
 
 
 
@@ -15,7 +16,29 @@ export class UserService {
                 return { status: true, message: "User registered successfully", data: result.rows[0] };
             }
             return { status: false, message: "User registration failed" };
-        } catch (error: any) {            
+        } catch (error: any) {
+            return { status: false, message: error.message };
+        }
+    }
+
+
+    async userLogin(userReq: userLoginType): Promise<{ status: boolean; message: string; data?: object; error?: string }> {
+        try {
+            const result = await this.repo.userLogin(userReq);
+            if (Number(result.rowCount) > 0) {
+                const isMatch = await compareHass(userReq.password, result.rows[0].password);
+                if (isMatch) {
+                    const userData = {
+                        id: result.rows[0].id,
+                        name: result.rows[0].name,
+                        email: result.rows[0].email
+                    }
+                    return { status: true, message: "User retrieved successfully", data: userData };
+                }
+                return { status: false, message: "Incorrect password" };
+            }
+            return { status: false, message: "User not found" };
+        } catch (error: any) {
             return { status: false, message: error.message };
         }
     }

@@ -20,4 +20,16 @@ export class UserController {
         }
     }
 
+    userLogin = async (req: FastifyRequest, res: FastifyReply) => {
+        try {
+            const result = await this.service.userLogin(req.body as any);
+            if (result.status) {
+                return res.code(200).send(result);
+            }
+            return res.code(404).send(result);
+        } catch (error: any) {
+            return res.code(500).send({ status: false, message: error.message });
+        }
+    }
+
 }
