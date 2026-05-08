@@ -1,9 +1,10 @@
 import { compareHass } from "../../utils/constants";
 import { UserRepository } from "./user.repository";
 import { userLoginType, userRegisterType } from "./user.type";
+import jwt from 'jsonwebtoken';
+import dotEnv from 'dotenv';
 
-
-
+dotEnv.config();
 
 export class UserService {
 
@@ -33,7 +34,10 @@ export class UserService {
                         name: result.rows[0].name,
                         email: result.rows[0].email
                     }
-                    return { status: true, message: "User retrieved successfully", data: userData };
+                    const token = jwt.sign({
+                        data: userData
+                    }, process.env.JWT_SECRET as string, { expiresIn: '15m' });
+                    return { status: true, message: "User retrieved successfully", data: { ...userData, token } };
                 }
                 return { status: false, message: "Incorrect password" };
             }
