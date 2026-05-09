@@ -1,6 +1,6 @@
 import fastify from "fastify";
 import dbPlugin from '../src/plugins/db';
-import { userRoute } from "./module/user/user.route";
+import { AuthRoute } from "./module/auth/auth.route";
 
 
 export const buildApp = () => {
@@ -9,7 +9,7 @@ export const buildApp = () => {
 
     app.register(dbPlugin);
 
-    app.register(userRoute, { prefix: 'api/v1/auth' });
+    app.register(AuthRoute, { prefix: 'api/v1/auth' });
 
 
     return app;
