@@ -38,6 +38,17 @@ export const initSocket = (server: any) => {
     io.on("connection", (socket: any) => {
         console.log("User connected:", socket.user.data.id);
 
+        socket.on("message", (data: any) => {
+
+            /* socket.emit("message_received", {
+                text: data.text,
+            }); */
+
+            io.emit("message_received", {
+                text: data
+            })
+        });
+
         socket.on("disconnect", () => {
             console.log("User disconnected");
         });
@@ -46,4 +57,9 @@ export const initSocket = (server: any) => {
 };
 
 
-export const getIo = () => io;
+export const getIo = () => {
+    if (!io) {
+        throw new Error("Socket.io not initialized");
+    }
+    return io;
+};
