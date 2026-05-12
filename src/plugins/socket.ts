@@ -13,13 +13,14 @@ export const initSocket = (server: any) => {
 
     io = new Server(server, {
         cors: {
-            origin: "*"
+            origin: "*",
+            methods: ["GET", "POST"]
         },
     });
 
     io.use((socket: any, next) => {
         try {
-            const token = socket.handshake.query.token;
+            const token = socket.handshake.headers?.authorization?.split(" ")[1];
             if (!token) {
                 return next(new Error("Unauthorized"));
             }
@@ -35,7 +36,7 @@ export const initSocket = (server: any) => {
 
 
     io.on("connection", (socket: any) => {
-        console.log("User connected:", socket.user.id);
+        console.log("User connected:", socket.user.data.id);
 
         socket.on("disconnect", () => {
             console.log("User disconnected");
