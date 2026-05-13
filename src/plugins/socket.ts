@@ -45,8 +45,9 @@ export const initSocket = (server: any) => {
             }); */
 
             io.emit("message_received", {
-                text: data
-            })
+                id: socket.user.data.id,
+                text: data,
+            });
         });
 
         socket.on("disconnect", () => {
