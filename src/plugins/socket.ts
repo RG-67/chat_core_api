@@ -8,6 +8,8 @@ dotEnv.config();
 
 let io: Server;
 
+const onlineUsers = new Map<string, string>();
+
 
 export const initSocket = (server: any) => {
 
@@ -36,21 +38,23 @@ export const initSocket = (server: any) => {
 
 
     io.on("connection", (socket: any) => {
+        const userId = socket.user.data.id;
+        onlineUsers.set(userId, socket.id);
         console.log("User connected:", socket.user.data.id);
 
-        socket.on("message", (data: any) => {
+        socket.on("send_message", (data: any) => {
+            const receiverId = onlineUsers.get(data.receiverId);
 
-            /* socket.emit("message_received", {
-                text: data.text,
-            }); */
-
-            io.emit("message_received", {
-                id: socket.user.data.id,
-                text: data,
-            });
+            if (receiverId) {
+                io.to(receiverId).emit("receive_message", {
+                    senderId: userId,
+                    text: data.text
+                });
+            }
         });
 
         socket.on("disconnect", () => {
+            onlineUsers.delete(userId);
             console.log("User disconnected");
         });
     });
