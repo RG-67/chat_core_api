@@ -43,8 +43,9 @@ export const initSocket = (server: any) => {
         console.log("User connected:", socket.user.data.id);
 
         socket.on("send_message", (data: any) => {
+            console.log("DT: ", data);
             const receiverId = onlineUsers.get(data.receiverId);
-
+            console.log("RCV_MSG: ", receiverId);
             if (receiverId) {
                 io.to(receiverId).emit("receive_message", {
                     senderId: userId,
