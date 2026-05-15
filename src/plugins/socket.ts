@@ -11,6 +11,7 @@ let io: Server;
 const onlineUsers = new Map<string, string>();
 
 
+
 export const initSocket = (server: any) => {
 
     io = new Server(server, {
@@ -43,9 +44,11 @@ export const initSocket = (server: any) => {
         console.log("User connected:", socket.user.data.id);
 
         socket.on("send_message", (data: any) => {
-            console.log("DT: ", data);
+            if (typeof data === "string") {
+                data = JSON.parse(data);
+            }
+
             const receiverId = onlineUsers.get(data.receiverId);
-            console.log("RCV_MSG: ", receiverId);
             if (receiverId) {
                 io.to(receiverId).emit("receive_message", {
                     senderId: userId,
@@ -56,7 +59,7 @@ export const initSocket = (server: any) => {
 
         socket.on("disconnect", () => {
             onlineUsers.delete(userId);
-            console.log("User disconnected");
+            console.log("User disconnected: ", userId);
         });
     });
 
