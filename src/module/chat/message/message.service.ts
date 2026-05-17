@@ -17,7 +17,7 @@ export class MessageService {
             }
             return { status: false, message: "Message not inserted" };
         } catch (error: any) {
-            return { status: true, message: "Message not inserted", error: error.message };
+            return { status: false, message: "Message not inserted", error: error.message };
         }
     }
 
