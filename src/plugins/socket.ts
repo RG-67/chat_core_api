@@ -1,15 +1,13 @@
 import { Server } from 'socket.io';
 import jwt from 'jsonwebtoken';
 import dotEnv from 'dotenv';
+import { registerHandler } from '../module/chat/socket/socket.handler';
 
 
 dotEnv.config();
 
 
 let io: Server;
-
-const onlineUsers = new Map<string, string>();
-
 
 
 export const initSocket = (server: any) => {
@@ -38,29 +36,8 @@ export const initSocket = (server: any) => {
     });
 
 
-    io.on("connection", (socket: any) => {
-        const userId = socket.user.data.id;
-        onlineUsers.set(userId, socket.id);
-        console.log("User connected:", socket.user.data.id);
-
-        socket.on("send_message", (data: any) => {
-            if (typeof data === "string") {
-                data = JSON.parse(data);
-            }
-
-            const receiverId = onlineUsers.get(data.receiverId);
-            if (receiverId) {
-                io.to(receiverId).emit("receive_message", {
-                    senderId: userId,
-                    text: data.text
-                });
-            }
-        });
-
-        socket.on("disconnect", () => {
-            onlineUsers.delete(userId);
-            console.log("User disconnected: ", userId);
-        });
+    io.on("connection", (socket) => {
+        registerHandler(io, socket);
     });
 
 };
