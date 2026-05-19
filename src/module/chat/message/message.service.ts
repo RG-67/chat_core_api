@@ -12,7 +12,6 @@ export class MessageService {
     async insertMessage(messageData: messageType): Promise<{ status: Boolean; message: string; data?: object; error?: string }> {
         try {
             const result = await this.repo.insertMessage(messageData);
-            console.log("RST; ", result.rows);
             if (Number(result.rowCount) > 0) {
                 return { status: true, message: "Message inserted", data: result.rows[0] };
             }

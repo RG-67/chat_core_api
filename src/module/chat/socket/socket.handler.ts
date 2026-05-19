@@ -2,10 +2,10 @@ import { Server, Socket } from "socket.io";
 import { SOCKET_EVENTS } from "./socket.events";
 import { MessageService } from "../message/message.service";
 import { MessageRepository } from "../message/message.repository";
-import { Pool } from "pg";
+import { pool } from "../../../config/db";
 
 
-const messageRepo = new MessageRepository(Pool as any);
+const messageRepo = new MessageRepository(pool);
 const messageService = new MessageService(messageRepo);
 
 const onlineUsers = new Map<string, string>();
