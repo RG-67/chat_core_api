@@ -39,6 +39,33 @@ export const registerHandler = (io: Server, socket: Socket) => {
         }
     });
 
+    socket.on(SOCKET_EVENTS.TYPING, (data: any) => {
+        if (typeof data === "string") {
+            data = JSON.parse(data);
+        }
+        const receiverId = onlineUsers.get(data.receiverId);
+
+        if (receiverId) {
+            io.to(receiverId).emit(SOCKET_EVENTS.USER_TYPING, {
+                senderId: userId
+            });
+        }
+    });
+
+    socket.on(SOCKET_EVENTS.STOP_TYPING, (data: any) => {
+        if (typeof data === "string") {
+            data = JSON.parse(data);
+        }
+
+        const receiverId = onlineUsers.get(data.receiverId);
+
+        if (receiverId) {
+            io.to(receiverId).emit(SOCKET_EVENTS.STOP_TYPING, {
+                senderId: userId
+            });
+        }
+    });
+
     socket.on(SOCKET_EVENTS.DISCONNECT, () => {
         onlineUsers.delete(userId);
         console.log("User disconnected: ", userId);
