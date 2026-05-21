@@ -40,6 +40,7 @@ export const registerHandler = (io: Server, socket: Socket) => {
     });
 
     socket.on(SOCKET_EVENTS.TYPING, (data: any) => {
+        console.log("TYP: ", data);
         if (typeof data === "string") {
             data = JSON.parse(data);
         }
@@ -53,6 +54,7 @@ export const registerHandler = (io: Server, socket: Socket) => {
     });
 
     socket.on(SOCKET_EVENTS.STOP_TYPING, (data: any) => {
+        console.log("ST_TYP: ", data);
         if (typeof data === "string") {
             data = JSON.parse(data);
         }
