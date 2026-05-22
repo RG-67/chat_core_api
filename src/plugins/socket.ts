@@ -21,7 +21,7 @@ export const initSocket = (server: any) => {
 
     io.use((socket: any, next) => {
         try {
-            const token = socket.handshake.headers?.authorization?.split(" ")[1];
+            const token = socket.handshake.auth?.token || socket.handshake.headers?.authorization?.split(" ")[1];
             if (!token) {
                 return next(new Error("Unauthorized"));
             }
