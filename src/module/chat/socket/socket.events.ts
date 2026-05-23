@@ -6,5 +6,7 @@ export const SOCKET_EVENTS = {
     TYPING: "typing",
     USER_TYPING: "user_typing",
     STOP_TYPING: "stop_typing",
-    DISCONNECT: "disconnect"
+    DISCONNECT: "disconnect",
+    USER_ONLINE: "user_online",
+    USER_OFFLINE: "user_offline"
 }
