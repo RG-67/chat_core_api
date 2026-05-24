@@ -9,7 +9,7 @@ import redisClient from "../../../config/redis";
 const messageRepo = new MessageRepository(pool);
 const messageService = new MessageService(messageRepo);
 
-const onlineUsers = new Map<string, string>();
+const onlineUsers = new Map<string, string>(); 
 
 export const registerHandler = async (io: Server, socket: Socket) => {
     const userId = (socket as any).user.data.id;
