@@ -9,7 +9,7 @@ import redisClient from "../../../config/redis";
 const messageRepo = new MessageRepository(pool);
 const messageService = new MessageService(messageRepo);
 
-const onlineUsers = new Map<string, string>(); 
+const onlineUsers = new Map<string, Set<string>>();
 
 export const registerHandler = async (io: Server, socket: Socket) => {
     const userId = (socket as any).user.data.id;
@@ -24,82 +24,171 @@ export const registerHandler = async (io: Server, socket: Socket) => {
         );
     }
 
+    const presenceInterval = setInterval(() => {
+        refreshPresence(userId);
+    }, 15000);
+
+    if (!onlineUsers.has(userId)) {
+        onlineUsers.set(userId, new Set());
+    }
 
 
-    onlineUsers.set(userId, socket.id);
+    onlineUsers.get(userId)?.add(socket.id);
     await refreshPresence(userId);
 
-    io.emit(SOCKET_EVENTS.USER_ONLINE, {
+    socket.broadcast.emit(SOCKET_EVENTS.USER_ONLINE, {
         userId
     });
+
 
     console.log("User connected:", userId);
 
 
     socket.on(SOCKET_EVENTS.SEND_MESSAGE, async (data: any) => {
-        if (typeof data === "string") {
-            data = JSON.parse(data);
-        }
+        try {
+            if (typeof data === "string") {
+                data = JSON.parse(data);
+            }
 
-        const receiverId = onlineUsers.get(data.receiverId);
 
-        await refreshPresence(userId);
+            await refreshPresence(userId);
 
-        const messageData = {
-            senderId: userId as string,
-            receiverId: data.receiverId as string,
-            content: data.text as string
-        }
 
-        const result = await messageService.insertMessage(messageData);
-        console.log(result.message);
+            const messageData = {
+                senderId: userId as string,
+                receiverId: data.receiverId as string,
+                content: data.text as string
+            }
 
-        if (receiverId) {
-            io.to(receiverId).emit(SOCKET_EVENTS.RECEIVE_MESSAGE, {
-                senderId: userId,
+            const result: any = await messageService.insertMessage(messageData);
+            console.log(result.message);
+
+            socket.emit(SOCKET_EVENTS.MESSAGE_SENT, {
+                messageId: result.data.id,
+                receiverId: data.receiverId,
                 text: data.text
             });
+
+            const receiverSockets = onlineUsers.get(data.receiverId);
+
+            if (receiverSockets?.size) {
+                receiverSockets.forEach((socketId) => {
+                    io.to(socketId).emit(SOCKET_EVENTS.RECEIVE_MESSAGE, {
+                        messageId: result.data.id,
+                        senderId: userId,
+                        text: data.text
+                    });
+                });
+            }
+        } catch (error) {
+            console.log("SEND_MSG_SECTION: ", error);
+        }
+
+    });
+
+    socket.on(SOCKET_EVENTS.MESSAGE_DELIVERED, async (data: any) => {
+        try {
+            if (typeof data === "string") {
+                data = JSON.parse(data);
+            }
+
+            const senderSockets = onlineUsers.get(data.senderId);
+
+            if (!senderSockets?.size) {
+                senderSockets?.forEach((socketId) => {
+                    io.to(socketId).emit(SOCKET_EVENTS.MESSAGE_DELIVERED, {
+                        messageId: data.messageId
+                    });
+                });
+            }
+        } catch (error) {
+            console.log("MSG_DEL: ", error);
+        }
+    });
+
+    socket.on(SOCKET_EVENTS.MESSAGE_SEEN, async (data: any) => {
+        try {
+            if (typeof data === "string") {
+                data = JSON.parse(data);
+            }
+
+            const senderSockets = onlineUsers.get(data.senderId);
+
+            if (!senderSockets?.size) {
+                senderSockets?.forEach((socketId) => {
+                    io.to(socketId).emit(SOCKET_EVENTS.MESSAGE_SEEN, {
+                        messageId: data.messageId
+                    });
+                });
+            }
+        } catch (error) {
+            console.log("MSG_SEEN: ", error);
         }
     });
 
     socket.on(SOCKET_EVENTS.TYPING, async (data: any) => {
-        if (typeof data === "string") {
-            data = JSON.parse(data);
-        }
-        const receiverId = onlineUsers.get(data.receiverId);
+        try {
+            if (typeof data === "string") {
+                data = JSON.parse(data);
+            }
 
-        await refreshPresence(userId);
+            await refreshPresence(userId);
 
-        if (receiverId) {
-            io.to(receiverId).emit(SOCKET_EVENTS.USER_TYPING, {
-                senderId: userId
-            });
+            const receiverSockets = onlineUsers.get(data.receiverId);
+
+            if (receiverSockets?.size) {
+                receiverSockets.forEach((socketId) => {
+                    io.to(socketId).emit(SOCKET_EVENTS.USER_TYPING, {
+                        senderId: userId
+                    });
+                });
+            }
+        } catch (error) {
+            console.log("TYP: ", error);
         }
     });
 
     socket.on(SOCKET_EVENTS.STOP_TYPING, async (data: any) => {
-        if (typeof data === "string") {
-            data = JSON.parse(data);
-        }
+        try {
+            if (typeof data === "string") {
+                data = JSON.parse(data);
+            }
 
-        const receiverId = onlineUsers.get(data.receiverId);
+            await refreshPresence(userId);
 
-        await refreshPresence(userId);
+            const receiverSockets = onlineUsers.get(data.receiverId);
 
-        if (receiverId) {
-            io.to(receiverId).emit(SOCKET_EVENTS.STOP_TYPING, {
-                senderId: userId
-            });
+            if (receiverSockets?.size) {
+                receiverSockets.forEach((socketId) => {
+                    io.to(socketId).emit(SOCKET_EVENTS.STOP_TYPING, {
+                        senderId: userId
+                    });
+                });
+            }
+
+
+        } catch (error) {
+            console.log("STOP_TYP: ", error);
         }
     });
 
     socket.on(SOCKET_EVENTS.DISCONNECT, async () => {
+        clearInterval(presenceInterval);
         await redisClient.del(`user:${userId}`);
-        onlineUsers.delete(userId);
 
-        io.emit(SOCKET_EVENTS.USER_OFFLINE, {
-            userId
-        });
+        const userSockets = onlineUsers.get(userId);
+
+        if (userSockets) {
+            userSockets.delete(socket.id);
+        }
+
+        if (userSockets?.size === 0) {
+            onlineUsers.delete(userId);
+
+            socket.broadcast.emit(SOCKET_EVENTS.USER_OFFLINE, {
+                userId
+            });
+        }
 
         console.log("User disconnected: ", userId);
     });
