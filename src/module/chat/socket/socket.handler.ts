@@ -36,9 +36,9 @@ export const registerHandler = async (io: Server, socket: Socket) => {
     onlineUsers.get(userId)?.add(socket.id);
     await refreshPresence(userId);
 
-    socket.broadcast.emit(SOCKET_EVENTS.USER_ONLINE, {
-        userId
-    });
+
+
+    socket.broadcast.emit(SOCKET_EVENTS.USER_ONLINE, { userId });
 
 
     console.log("User connected:", userId);
@@ -133,6 +133,7 @@ export const registerHandler = async (io: Server, socket: Socket) => {
             }
 
             await refreshPresence(userId);
+
 
             const receiverSockets = onlineUsers.get(data.receiverId);
 
