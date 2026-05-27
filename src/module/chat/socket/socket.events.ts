@@ -8,6 +8,7 @@ export const SOCKET_EVENTS = {
     STOP_TYPING: "stop_typing",
     DISCONNECT: "disconnect",
     USER_ONLINE: "user_online",
+    ONLINE_USERS: "online_users",
     USER_OFFLINE: "user_offline",
     MESSAGE_SENT: "message_sent",
     MESSAGE_DELIVERED: "message_delivered",

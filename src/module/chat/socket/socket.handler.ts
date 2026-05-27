@@ -11,6 +11,7 @@ const messageService = new MessageService(messageRepo);
 
 const onlineUsers = new Map<string, Set<string>>();
 
+
 export const registerHandler = async (io: Server, socket: Socket) => {
     const userId = (socket as any).user.data.id;
 
@@ -36,11 +37,8 @@ export const registerHandler = async (io: Server, socket: Socket) => {
     onlineUsers.get(userId)?.add(socket.id);
     await refreshPresence(userId);
 
-
-
-    socket.broadcast.emit(SOCKET_EVENTS.USER_ONLINE, { userId });
-
-
+    io.emit(SOCKET_EVENTS.ONLINE_USERS, Array.from(onlineUsers.keys()));
+    
     console.log("User connected:", userId);
 
 
@@ -94,7 +92,7 @@ export const registerHandler = async (io: Server, socket: Socket) => {
 
             const senderSockets = onlineUsers.get(data.senderId);
 
-            if (!senderSockets?.size) {
+            if (senderSockets?.size) {
                 senderSockets?.forEach((socketId) => {
                     io.to(socketId).emit(SOCKET_EVENTS.MESSAGE_DELIVERED, {
                         messageId: data.messageId
@@ -114,7 +112,7 @@ export const registerHandler = async (io: Server, socket: Socket) => {
 
             const senderSockets = onlineUsers.get(data.senderId);
 
-            if (!senderSockets?.size) {
+            if (senderSockets?.size) {
                 senderSockets?.forEach((socketId) => {
                     io.to(socketId).emit(SOCKET_EVENTS.MESSAGE_SEEN, {
                         messageId: data.messageId
@@ -185,6 +183,8 @@ export const registerHandler = async (io: Server, socket: Socket) => {
 
         if (userSockets?.size === 0) {
             onlineUsers.delete(userId);
+
+            io.emit(SOCKET_EVENTS.ONLINE_USERS, Array.from(onlineUsers.keys()));
 
             socket.broadcast.emit(SOCKET_EVENTS.USER_OFFLINE, {
                 userId
