@@ -6,7 +6,7 @@ import { pool } from "../../../config/db";
 import redisClient from "../../../config/redis";
 
 
-const messageRepo = new MessageRepository(pool);
+const messageRepo = new MessageRepository(pool); 
 const messageService = new MessageService(messageRepo);
 
 const onlineUsers = new Map<string, Set<string>>();
