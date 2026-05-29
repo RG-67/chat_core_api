@@ -5,3 +5,9 @@ export interface messageType {
     receiverId: string,
     content: string
 }
+
+
+export interface sendMessageType {
+    messageId: string,
+    userId: string
+}

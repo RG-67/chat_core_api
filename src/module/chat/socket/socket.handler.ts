@@ -6,7 +6,7 @@ import { pool } from "../../../config/db";
 import redisClient from "../../../config/redis";
 
 
-const messageRepo = new MessageRepository(pool); 
+const messageRepo = new MessageRepository(pool);
 const messageService = new MessageService(messageRepo);
 
 const onlineUsers = new Map<string, Set<string>>();
@@ -38,7 +38,7 @@ export const registerHandler = async (io: Server, socket: Socket) => {
     await refreshPresence(userId);
 
     io.emit(SOCKET_EVENTS.ONLINE_USERS, Array.from(onlineUsers.keys()));
-    
+
     console.log("User connected:", userId);
 
 
@@ -60,6 +60,14 @@ export const registerHandler = async (io: Server, socket: Socket) => {
 
             const result: any = await messageService.insertMessage(messageData);
             console.log(result.message);
+
+            const sendMsgData = {
+                messageId: result.data.id,
+                userId: data.receiverId
+            }
+
+            const sendMsgResult = await messageService.createMessageStatus(sendMsgData);
+            console.log(sendMsgResult.message);
 
             socket.emit(SOCKET_EVENTS.MESSAGE_SENT, {
                 messageId: result.data.id,
@@ -97,6 +105,7 @@ export const registerHandler = async (io: Server, socket: Socket) => {
                     io.to(socketId).emit(SOCKET_EVENTS.MESSAGE_DELIVERED, {
                         messageId: data.messageId
                     });
+
                 });
             }
         } catch (error) {
