@@ -26,7 +26,7 @@ export const registerHandler = async (io: Server, socket: Socket) => {
     }
 
     const presenceInterval = setInterval(() => {
-        refreshPresence(userId);
+        refreshPresence(userId).catch(console.error);
     }, 15000);
 
     if (!onlineUsers.has(userId)) {
@@ -99,6 +99,15 @@ export const registerHandler = async (io: Server, socket: Socket) => {
             }
 
             const senderSockets = onlineUsers.get(data.senderId);
+
+            const delMsgData = {
+                messageId: data.messageId,
+                userId: data.receiverId
+            }
+
+            const delMsgResult = await messageService.deliveredMessageStatus(delMsgData);
+            console.log(delMsgResult.message);
+
 
             if (senderSockets?.size) {
                 senderSockets?.forEach((socketId) => {

@@ -36,5 +36,18 @@ export class MessageService {
         }
     }
 
+    async deliveredMessageStatus(sendMsgType: sendMessageType): Promise<{ status: Boolean; message: string; data?: object; error?: string }> {
+        try {
+            const result = await this.repo.deliveredMessageStatus(sendMsgType);
+            if (Number(result.rowCount) > 0) {
+                return { status: true, message: "Message delivered", data: result.rows[0] };
+            }
+            return { status: false, message: "Message deliver failed" };
+        } catch (error: any) {
+            console.error("ERR: ", error.message);
+            return { status: false, message: "Internal server error", error: error.message };
+        }
+    }
+
 
 }
