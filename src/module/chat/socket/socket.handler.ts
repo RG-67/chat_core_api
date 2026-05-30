@@ -105,9 +105,7 @@ export const registerHandler = async (io: Server, socket: Socket) => {
                 userId: userId
             }
 
-            
-            
-            console.log("DLMSG: ", delMsgData);
+
             const delMsgResult = await messageService.deliveredMessageStatus(delMsgData);
             console.log(delMsgResult.message);
 
@@ -130,6 +128,14 @@ export const registerHandler = async (io: Server, socket: Socket) => {
             if (typeof data === "string") {
                 data = JSON.parse(data);
             }
+
+            const seenMsgData = {
+                messageId: data.messageId,
+                userId: userId
+            }
+
+            const result = await messageService.seenMessageStatus(seenMsgData);
+            console.log(result.message);
 
             const senderSockets = onlineUsers.get(data.senderId);
 

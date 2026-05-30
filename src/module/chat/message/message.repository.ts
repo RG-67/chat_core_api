@@ -31,4 +31,11 @@ export class MessageRepository {
         return result;
     }
 
+    async seenMessageStatus(sendMsgType: sendMessageType) {
+        const result = await this.db.query(`
+            UPDATE message_status SET seen_at = now() WHERE message_id = $1 AND user_id = $2
+            `, [sendMsgType.messageId, sendMsgType.userId]);
+        return result;
+    }
+
 }
