@@ -42,7 +42,7 @@ export class MessageService {
             if (Number(result.rowCount) > 0) {
                 return { status: true, message: "Message delivered", data: result.rows[0] };
             }
-            return { status: false, message: "Message deliver failed" };
+            return { status: false, message: "Message delivery failed" };
         } catch (error: any) {
             console.error("ERR: ", error.message);
             return { status: false, message: "Internal server error", error: error.message };

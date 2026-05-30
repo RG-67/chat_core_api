@@ -102,9 +102,12 @@ export const registerHandler = async (io: Server, socket: Socket) => {
 
             const delMsgData = {
                 messageId: data.messageId,
-                userId: data.receiverId
+                userId: userId
             }
 
+            
+            
+            console.log("DLMSG: ", delMsgData);
             const delMsgResult = await messageService.deliveredMessageStatus(delMsgData);
             console.log(delMsgResult.message);
 
