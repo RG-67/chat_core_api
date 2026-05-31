@@ -1,5 +1,5 @@
 import { Queue } from 'bullmq';
-import { bullRedis as redisClient} from '../../../config/bullmq';
+import { bullRedis as redisClient } from '../../../config/bullmq';
 
 
 
