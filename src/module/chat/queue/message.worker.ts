@@ -15,12 +15,15 @@ export const messageWorker = new Worker(
         switch (job.name) {
             case "send-message":
                 const { senderId, receiverId, content } = job.data;
-                const result: any = await messageService.insertMessage({ senderId, receiverId, content });
+                const insertResult: any = await messageService.insertMessage({ senderId, receiverId, content });
+                console.log(insertResult.message);
 
-                await messageService.createMessageStatus({
-                    messageId: result.data.id,
+                const createMsgResult = await messageService.createMessageStatus({
+                    messageId: insertResult.data.id,
                     userId: receiverId
-                })
+                });
+                console.log(createMsgResult.message);
+
                 break;
 
             default:

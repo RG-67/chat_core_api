@@ -4,6 +4,7 @@ import { MessageService } from "../message/message.service";
 import { MessageRepository } from "../message/message.repository";
 import { pool } from "../../../config/db";
 import redisClient from "../../../config/redis";
+import { queue } from "../queue/message.queue";
 
 
 const messageRepo = new MessageRepository(pool);
@@ -58,16 +59,15 @@ export const registerHandler = async (io: Server, socket: Socket) => {
                 content: data.text as string
             }
 
-            const result: any = await messageService.insertMessage(messageData);
-            console.log(result.message);
+            /* const result: any = await messageService.insertMessage(messageData);
+            console.log(result.message); */
 
-            const sendMsgData = {
-                messageId: result.data.id,
-                userId: data.receiverId
-            }
-
-            const sendMsgResult = await messageService.createMessageStatus(sendMsgData);
-            console.log(sendMsgResult.message);
+            await queue.add("send-message", {
+                senderId: userId,
+                receiverId: data.receiverId,
+                content: data.text
+            });
+            
 
             socket.emit(SOCKET_EVENTS.MESSAGE_SENT, {
                 messageId: result.data.id,
@@ -209,6 +209,7 @@ export const registerHandler = async (io: Server, socket: Socket) => {
         }
 
         if (userSockets?.size === 0) {
+
             onlineUsers.delete(userId);
 
             io.emit(SOCKET_EVENTS.ONLINE_USERS, Array.from(onlineUsers.keys()));
