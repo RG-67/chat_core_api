@@ -5,12 +5,12 @@ import { MessageRepository } from "../message/message.repository";
 import { pool } from "../../../config/db";
 import redisClient from "../../../config/redis";
 import { queue } from "../queue/message.queue";
+import { onlineUsers } from "../presence/presence.service";
+
 
 
 const messageRepo = new MessageRepository(pool);
 const messageService = new MessageService(messageRepo);
-
-const onlineUsers = new Map<string, Set<string>>();
 
 
 export const registerHandler = async (io: Server, socket: Socket) => {
@@ -53,11 +53,11 @@ export const registerHandler = async (io: Server, socket: Socket) => {
             await refreshPresence(userId);
 
 
-            const messageData = {
+            /* const messageData = {
                 senderId: userId as string,
                 receiverId: data.receiverId as string,
                 content: data.text as string
-            }
+            } */
 
             /* const result: any = await messageService.insertMessage(messageData);
             console.log(result.message); */
@@ -67,17 +67,19 @@ export const registerHandler = async (io: Server, socket: Socket) => {
                 receiverId: data.receiverId,
                 content: data.text
             });
-            
 
-            socket.emit(SOCKET_EVENTS.MESSAGE_SENT, {
+            console.log("Message queued");
+
+
+            /* socket.emit(SOCKET_EVENTS.MESSAGE_SENT, {
                 messageId: result.data.id,
                 receiverId: data.receiverId,
                 text: data.text
-            });
+            }); */
 
-            const receiverSockets = onlineUsers.get(data.receiverId);
+            // const receiverSockets = onlineUsers.get(data.receiverId);
 
-            if (receiverSockets?.size) {
+            /* if (receiverSockets?.size) {
                 receiverSockets.forEach((socketId) => {
                     io.to(socketId).emit(SOCKET_EVENTS.RECEIVE_MESSAGE, {
                         messageId: result.data.id,
@@ -85,7 +87,7 @@ export const registerHandler = async (io: Server, socket: Socket) => {
                         text: data.text
                     });
                 });
-            }
+            } */
         } catch (error) {
             console.log("SEND_MSG_SECTION: ", error);
         }
@@ -200,7 +202,6 @@ export const registerHandler = async (io: Server, socket: Socket) => {
 
     socket.on(SOCKET_EVENTS.DISCONNECT, async () => {
         clearInterval(presenceInterval);
-        await redisClient.del(`user:${userId}`);
 
         const userSockets = onlineUsers.get(userId);
 
@@ -209,6 +210,8 @@ export const registerHandler = async (io: Server, socket: Socket) => {
         }
 
         if (userSockets?.size === 0) {
+
+            await redisClient.del(`user:${userId}`);
 
             onlineUsers.delete(userId);
 

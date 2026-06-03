@@ -3,6 +3,7 @@ import { pool } from "../../../config/db";
 import { MessageRepository } from "../message/message.repository";
 import { MessageService } from "../message/message.service";
 import { bullRedis } from "../../../config/bullmq";
+import { publishMessageCreated } from "../pubsub/publisher";
 
 
 const messageRepo = new MessageRepository(pool);
@@ -14,6 +15,7 @@ export const messageWorker = new Worker(
     async (job) => {
         switch (job.name) {
             case "send-message":
+                console.log("Worker processing");
                 const { senderId, receiverId, content } = job.data;
                 const insertResult: any = await messageService.insertMessage({ senderId, receiverId, content });
                 console.log(insertResult.message);
@@ -23,6 +25,13 @@ export const messageWorker = new Worker(
                     userId: receiverId
                 });
                 console.log(createMsgResult.message);
+
+                await publishMessageCreated({
+                    messageId: insertResult.data.id,
+                    senderId,
+                    receiverId,
+                    content
+                });
 
                 break;
 

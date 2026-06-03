@@ -1,7 +1,10 @@
 import dotEnv from 'dotenv';
 import { buildApp } from './app';
-import { initSocket } from './plugins/socket';
+import { getIo, initSocket } from './plugins/socket';
 import { connectRedis } from './config/redis';
+import { initSubscriber } from './module/chat/pubsub/subscriber';
+import { onlineUsers } from './module/chat/presence/presence.service';
+import { messageWorker } from './module/chat/queue/message.worker';
 
 
 
@@ -14,6 +17,7 @@ const start = async () => {
     try {
         await connectRedis();
         initSocket(app.server);
+        await initSubscriber(getIo(), onlineUsers);
         await app.listen({ port: Number(port) });
         console.log(`Server running at port: ${port}`);
     } catch (error) {
