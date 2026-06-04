@@ -9,6 +9,8 @@ import { publishMessageCreated } from "../pubsub/publisher";
 const messageRepo = new MessageRepository(pool);
 const messageService = new MessageService(messageRepo);
 
+console.log("message.worker.ts loaded");
+
 
 export const messageWorker = new Worker(
     "messages",

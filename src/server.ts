@@ -17,6 +17,7 @@ const start = async () => {
     try {
         await connectRedis();
         initSocket(app.server);
+        messageWorker;
         await initSubscriber(getIo(), onlineUsers);
         await app.listen({ port: Number(port) });
         console.log(`Server running at port: ${port}`);
