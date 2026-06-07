@@ -212,7 +212,7 @@ export const registerHandler = async (io: Server, socket: Socket) => {
         if (userSockets?.size === 0) {
 
             await redisClient.del(`user:${userId}`); 
-
+            
             onlineUsers.delete(userId);
 
             io.emit(SOCKET_EVENTS.ONLINE_USERS, Array.from(onlineUsers.keys()));
