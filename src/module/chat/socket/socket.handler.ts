@@ -221,7 +221,7 @@ export const registerHandler = async (io: Server, socket: Socket) => {
                 userId
             });
         }
-
+        
         console.log("User disconnected: ", userId);
     });
 
