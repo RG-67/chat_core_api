@@ -31,5 +31,6 @@ export class AuthController {
             return res.code(500).send({ status: false, message: error.message });
         }
     }
+    
 
 }
