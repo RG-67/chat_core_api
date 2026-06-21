@@ -8,6 +8,7 @@ const userDetails = {
     }
 }
 
+
 const userRegSuccessRes = {
     type: "object",
     properties: {
